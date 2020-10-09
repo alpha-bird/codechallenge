@@ -1,0 +1,33 @@
+org: alphabird
+
+app: codechallenge
+
+service: ${self:app}-shared-bucket
+
+provider:
+  name: aws
+  profile: ${opt:profile, "default"}
+  stage: ${opt:stage, "dev"}
+  stackName: my-code-challenge-${opt:stage, self:provider.stage}
+  region: ${opt:region, "us-east-1"}
+  runtime: nodejs12.x
+  environment:
+      ${file(./config.yml):${self:custom.stage}}
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  basename: ${self:service}-${self:provider.stage}
+  bucketname: ${self:custom.basename}-${self:provider.region}-artifacts
+
+resources:
+  Resources:
+    S3SharedBucketArtifacts:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.bucketname}
+
+outputs:
+  S3SharedBucketArtifactsName:
+    Ref: S3SharedBucketArtifacts
+  S3SharedBucketArtifactsArn:
+    Fn::GetAtt: S3SharedBucketArtifacts.Arn

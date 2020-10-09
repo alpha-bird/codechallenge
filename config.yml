@@ -1,0 +1,12 @@
+default: &default
+
+
+dev:
+  <<: *default
+  clientId: "1234abcd"
+  clientSecret: "555ffaacc"
+
+prod:
+  <<: *default
+  clientId: "ccccxyz1234"
+  clientSecret: "cchhall2134"

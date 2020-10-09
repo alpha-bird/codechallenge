@@ -1,0 +1,35 @@
+org: alphabird
+
+app: codechallenge
+
+service: ${self:app}-vpc
+
+provider:
+  name: aws
+  profile: ${opt:profile, "default"}
+  stage: ${opt:stage, "dev"}
+  stackName: my-code-challenge-${opt:stage, self:provider.stage}
+  region: ${opt:region, "us-east-1"}
+  deploymentBucket:
+    name: ${self:custom.sharedBucketName}
+
+custom:
+  basename: ${self:service}-${self:provider.stage}
+  sharedBucketName: ${output:${self:app}-shared-bucket.S3SharedBucketArtifactsName}
+
+resources:
+  Resources:
+    VPC:
+      Type: AWS::EC2::VPC
+      Properties:
+        CidrBlock: 10.0.0.0/16
+        EnableDnsSupport: true
+        EnableDnsHostnames: true
+        InstanceTenancy: default
+    InternetGateway:
+      Type: AWS::EC2::InternetGateway
+    VPCGatewayAttachment:
+      Type: AWS::EC2::VPCGatewayAttachment
+      Properties:
+        VpcId: !Ref VPC
+        InternetGatewayId: !Ref InternetGateway
