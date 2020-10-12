@@ -4,8 +4,31 @@
   "description": "Code challenge from Serverless Guru",
   "main": "index.js",
   "scripts": {
+    "deploy-shared-bucket-dev": "cd resources/s3 & serverless deploy --profile alphabird --stage dev",
+    "deploy-vpc-dev": "cd resources/vpc & serverless deploy --profile alphabird --stage dev",
+    "deploy-database-dev": "cd resources/database & serverless deploy --profile alphabird --stage dev",
+    "deploy-role-dev": "cd resources/role & serverless deploy --profile alphabird --stage dev",
+    "deploy-dev": "serverless deploy --profile alphabird --stage dev",
+    "deploy-prod": "serverless deploy --profile alphabird --stage prod",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "request": "^2.88.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.2.0",
+    "@babel/preset-env": "^7.3.1",
+    "babel-core": "^6.26.3",
+    "babel-loader": "^8.0.5",
+    "babel-preset-es2015": "^6.24.1",
+    "eslint": "^5.13.0",
+    "eslint-loader": "^2.1.1",
+    "eslint-plugin-node": "^8.0.1",
+    "on-build-webpack": "^0.1.0",
+    "serverless-webpack": "^5.2.0",
+    "webpack": "^4.29.1",
+    "webpack-node-externals": "^1.7.2"
+  }
 }

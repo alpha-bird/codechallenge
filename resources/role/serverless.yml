@@ -1,0 +1,56 @@
+org: alphabird
+
+app: codechallenge
+
+service: ${self:app}-role
+
+provider:
+  name: aws
+  profile: ${opt:profile, "default"}
+  stage: ${opt:stage, "dev"}
+  region: ${opt:region, "us-east-1"}
+  deploymentBucket:
+    name: ${self:custom.sharedBucketName}
+
+custom:
+  basename: ${self:service}-${self:provider.stage}
+  sharedBucketName: ${output:${self:app}-shared-bucket.S3SharedBucketArtifactsName}
+
+resources:
+  Resources:
+    LambdaToVPCDynamoDB:
+        Type: 'AWS::IAM::Role'
+        Properties: 
+          AssumeRolePolicyDocument: 
+            Version: '2012-10-17'
+            Statement: 
+              - Effect: 'Allow'
+                Principal:
+                  Service: 
+                    - 'lambda.amazonaws.com'
+                Action: 
+                  - 'sts:AssumeRole'
+          ManagedPolicyArns: 
+            - 'arn:aws:iam::aws:policy/AWSLambdaFullAccess'
+            - 'arn:aws:iam::aws:policy/AmazonVPCCrossAccountNetworkInterfaceOperations'
+            - 'arn:aws:iam::aws:policy/AmazonElastiCacheFullAccess'
+            - 'arn:aws:iam::aws:policy/AmazonDynamoDBReadOnlyAccess'
+            - 'arn:aws:iam::aws:policy/AmazonVPCReadOnlyAccess'
+            - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+            - 'arn:aws:iam::aws:policy/SecretsManagerReadWrite'
+            - 'arn:aws:iam::aws:policy/AmazonAPIGatewayInvokeFullAccess'
+            - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
+          Policies:
+            - PolicyName: KinesisAccess
+              PolicyDocument: 
+                Version: '2012-10-17'
+                Statement: 
+                  -
+                    Effect: Allow
+                    Action: "kinesis:*"
+                    Resource: "*"  
+          RoleName: 'LambdaToVPCDynamoDB'
+
+outputs:
+  LambdaToVPCDynamoDBArn:
+    Fn::GetAtt: LambdaToVPCDynamoDB.Arn

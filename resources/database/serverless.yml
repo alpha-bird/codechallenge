@@ -1,0 +1,35 @@
+org: alphabird
+
+app: codechallenge
+
+service: ${self:app}-database
+
+provider:
+  name: aws
+  profile: ${opt:profile, "default"}
+  stage: ${opt:stage, "dev"}
+  region: ${opt:region, "us-east-1"}
+  deploymentBucket:
+    name: ${self:custom.sharedBucketName}
+
+custom:
+  basename: ${self:service}-${self:provider.stage}
+  sharedBucketName: ${output:${self:app}-shared-bucket.S3SharedBucketArtifactsName}
+  databaseSubnetGroupName: ${output:${self:app}-vpc.DatabaseSubnetGroupName}
+  securityGroupName: ${output:${self:app}-vpc.SecurityGroupName}
+
+resources:
+  Resources:
+    DatabaseCluster:
+      Type: AWS::RDS::DBCluster
+      Properties:
+        DatabaseName: myawesomedatabase
+        Engine: aurora
+        EngineMode: serverless
+        MasterUsername: mydbuser
+        MasterUserPassword: mydatabasepassword
+        Port: 3306
+        BackupRetentionPeriod: 7
+        DBSubnetGroupName: ${self:custom.databaseSubnetGroupName}
+        VpcSecurityGroupIds:
+          - ${self:custom.securityGroupName}

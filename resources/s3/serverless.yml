@@ -8,11 +8,9 @@ provider:
   name: aws
   profile: ${opt:profile, "default"}
   stage: ${opt:stage, "dev"}
-  stackName: my-code-challenge-${opt:stage, self:provider.stage}
   region: ${opt:region, "us-east-1"}
-  runtime: nodejs12.x
   environment:
-      ${file(./config.yml):${self:custom.stage}}
+      ${file(../../config.yml):${self:custom.stage}}
 
 custom:
   stage: ${opt:stage, self:provider.stage}

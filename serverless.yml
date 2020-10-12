@@ -2,17 +2,59 @@ org: alphabird
 
 app: codechallenge
 
-service: ${self:app}-shared-bucket
+service: ${self:app}-lambda
 
 provider:
   name: aws
   profile: ${opt:profile, "default"}
   stage: ${opt:stage, "dev"}
-  stackName: my-code-challenge-${opt:stage, self:provider.stage}
   region: ${opt:region, "us-east-1"}
   runtime: nodejs12.x
+  tracing:
+    apiGateway: true
+    lambda: true
   environment:
-      ${file(./config.yml):${self:custom.stage}}
+      clientId: ${param:clientId}
+      clientSecret: ${param:clientSecret}
+  deploymentBucket:
+    name: ${self:custom.sharedBucketName}
+
+package:
+  exclude:
+    - node_modules/**
+    - '!node_modules/node-fetch/**'
+
+plugins:
+  - serverless-webpack
 
 custom:
   stage: ${opt:stage, self:provider.stage}
+  sharedBucketName: ${output:${self:app}-shared-bucket.S3SharedBucketArtifactsName}
+  lambdaToVPCDynamoDBArn: ${output:${self:app}-role.LambdaToVPCDynamoDBArn}
+  webpack:
+    webpackConfig: './webpack.config.js'   # Name of webpack configuration file 
+    includeModules: true   # Node modules configuration for packaging 
+    packager: 'npm'   # Packager that will be used to package your external modules 
+
+functions:
+  benefitsLambda:
+    role: ${self:custom.lambdaToVPCDynamoDBArn}
+    handler: src/index.handler
+    description: 'benefitsLambda description'
+    timeout: 45
+    memorySize: 3008
+    events:
+      - http:
+          path: benefits
+          method: get
+          cors:
+            origin: '*' # <-- Specify allowed origin
+            headers: # <-- Specify allowed headers
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+              - idtoken
+            allowCredentials: false
